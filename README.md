@@ -1,6 +1,9 @@
 # service
 
-based on the makefile , you can run running cluster : `make dev-up`
+based on the makefile , you can run running cluster : 
+```shell
+make dev-up
+```
 
 it will use /zarf/k8s/dev/king-config.yaml , to run the cluster and its wait 120s 
 
@@ -21,7 +24,10 @@ Thanks for using kind! 😊
 kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner`
 ```
 
-after your cluster up you can check services and pods status with thanks of the makefile : `make dev-status`
+after your cluster up you can check services and pods status with thanks of the makefile : 
+```shell
+ make dev-status
+ ```
 
 ```
 kubectl get nodes -o wide
@@ -43,7 +49,11 @@ kube-system          kube-scheduler-hadi-cluster-control-plane            1/1   
 local-path-storage   local-path-provisioner-6bc4bddd6b-nbn6f              1/1     Running   0          3m16s   10.244.0.4   hadi-cluster-control-plane   <none>           <none>
 ```
 
-and finally you can down and remove the cluster : `make dev-down`
+and finally you can down and remove the cluster :
+
+``` shell
+make dev-down    
+```
 ```
 kind delete cluster --name hadi-cluster
 Deleting cluster "hadi-cluster" ...
