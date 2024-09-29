@@ -5,8 +5,10 @@ import (
 	"expvar"
 	"fmt"
 	"github.com/ardanlabs/conf/v3"
+	"github.com/rahjooh/service/business/web/v1/debug"
 	"github.com/rahjooh/service/foundation/logger"
 	"go.uber.org/zap"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -49,8 +51,8 @@ func run(log *zap.SugaredLogger) error {
 			DebugHost       string        `conf:"default:0.0.0.0:4000"`
 			ReadTimeout     time.Duration `conf:"default:5s"`
 			WriteTimeout    time.Duration `conf:"default:10s"`
-			IdleTimeout     time.Duration `conf:"default:120s"`
-			ShutdownTimeout time.Duration `conf:"default:20s"`
+			IdleTimeout     time.Duration `conf:"default:120s,mask"`
+			ShutdownTimeout time.Duration `conf:"default:20s,noprint"`
 		}
 	}{
 		Version: conf.Version{
@@ -82,6 +84,17 @@ func run(log *zap.SugaredLogger) error {
 	log.Infow("startup", "config", out)
 
 	expvar.NewString("build").Set(build)
+
+	// -------------------------------------------------------------------------
+	// Start Debug Service
+
+	log.Infow("startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
+
+	go func() {
+		if err := http.ListenAndServe(cfg.Web.DebugHost, debug.Mux()); err != nil {
+			log.Errorw("shutdown", "status", "debug v1 router closed", "host", cfg.Web.DebugHost, "ERROR", err)
+		}
+	}()
 
 	// =========================================================================
 

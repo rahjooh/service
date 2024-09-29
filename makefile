@@ -31,6 +31,13 @@ SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 # VERSION       := "0.0.1-$(shell git rev-parse --short HEAD)"
 
 # ==============================================================================
+# Install dependencies
+
+dev-gotooling:
+	go install github.com/divan/expvarmon@latest
+
+
+# ==============================================================================
 # Building containers
 
 all: service
@@ -92,6 +99,13 @@ dev-describe-deployment:
 
 dev-describe-sales:
 	kubectl describe pod --namespace=$(NAMESPACE) -l app=$(APP)
+
+
+# ==============================================================================
+# Metrics and Tracing
+
+metrics-view-local:
+	expvarmon -ports="localhost:4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
 
 # ======================================================================================================================
 
