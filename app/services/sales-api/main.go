@@ -1,14 +1,16 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"github.com/ardanlabs/conf/v3"
+	"github.com/rahjooh/service/foundation/logger"
+	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
-
-	"github.com/rahjooh/service/foundation/logger"
-	"go.uber.org/zap"
+	"time"
 )
 
 var build = "develop"
@@ -28,6 +30,7 @@ func main() {
 		os.Exit(1)
 	}
 }
+
 func run(log *zap.SugaredLogger) error {
 
 	// =========================================================================
@@ -35,8 +38,37 @@ func run(log *zap.SugaredLogger) error {
 
 	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "BUILD", build)
 
+	// -------------------------------------------------------------------------
+	// Configuration
+
+	cfg := struct {
+		conf.Version
+		Web struct {
+			APIHost         string        `conf:"default:0.0.0.0:3000"`
+			DebugHost       string        `conf:"default:0.0.0.0:4000"`
+			ReadTimeout     time.Duration `conf:"default:5s"`
+			WriteTimeout    time.Duration `conf:"default:10s"`
+			IdleTimeout     time.Duration `conf:"default:120s"`
+			ShutdownTimeout time.Duration `conf:"default:20s"`
+		}
+	}{
+		Version: conf.Version{
+			Build: build,
+			Desc:  "copyright information here",
+		},
+	}
+
+	const prefix = "SALES"
+	help, err := conf.Parse(prefix, &cfg)
+	if err != nil {
+		if errors.Is(err, conf.ErrHelpWanted) {
+			fmt.Println(help)
+			return nil
+		}
+		return fmt.Errorf("parsing config: %w", err)
+	}
+
 	// =========================================================================
-	// GOMAXPROCS
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)

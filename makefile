@@ -76,7 +76,13 @@ dev-status:
 	kubectl get svc -o wide
 	kubectl get pods -o wide --watch --all-namespaces
 
-# ------------------------------------------------------------------------------
+dev-restart:
+	kubectl rollout restart deployment $(APP) --namespace=$(NAMESPACE)
+
+dev-update: all dev-load dev-restart
+
+dev-update-apply: all dev-load dev-apply
+# ----------------------------------------------------------------------------------------------------------------------
 
 dev-logs:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) --all-containers=true -f --tail=100
@@ -85,7 +91,10 @@ dev-logs:
 
 run-local:
 	go run app/services/sales-api/main.go
-	
+
+run-local-help:
+	go run app/services/sales-api/main.go --help   # or -h
+
 tidy:
 	go mod tidy
 	go mod vendor
